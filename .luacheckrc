@@ -45,6 +45,8 @@ opt.quiet = 1
 
 opt.exclude_files = {
 	"LibStub/",
+	"Data.lua",
+	"Test.lua",
 }
 
 return opt
