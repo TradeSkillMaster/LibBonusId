@@ -21,6 +21,7 @@ opt.read_globals = {
 	-- Table Functions
 	"sort",
 	"tinsert",
+	"tremove",
 	"wipe",
 
 	-- Strictly Required WoW APIs
