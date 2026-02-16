@@ -10,7 +10,6 @@ local private = {
 	bonusIdsTemp = {}, ---@type number[]
 	bonusesTemp = {}, ---@type BonusEntry[]
 	filterTemp = {}, ---@type number[]
-	bonusStringCache = {}, ---@type table<number, string|false>
 }
 local DATA_VERSION = 1
 local OP_GROUP = { scale = "level", set = "level", add = "add" }
@@ -53,10 +52,7 @@ local DEFAULT_DROP_LEVEL = 80
 ---@field contentTuning table<number, BonusContentTuning>
 ---@field items table<number, number>
 ---@field midnightItems table<number, boolean>
----@field levelToBonusId table<number, number>
----@field setLevelBonuses table<number, number>
----@field addBonuses number[]
----@field curveBonuses number[]
+---@field levelToBonusString table<number, string>
 
 
 
@@ -85,19 +81,13 @@ end
 function Lib.LoadData(data)
 	assert(Lib.ShouldLoadData(data.version, data.build))
 	private.data = data
-	wipe(private.bonusStringCache)
 end
 
 ---Returns a bonus string (partial item link format) that produces the given item level.
 ---@param itemLevel number The target item level
 ---@return string?
 function Lib.GetBonusStringForLevel(itemLevel)
-	local result = private.bonusStringCache[itemLevel]
-	if result == nil then
-		result = private.GetBonusStringForLevel(itemLevel)
-		private.bonusStringCache[itemLevel] = result or false
-	end
-	return result
+	return private.data.levelToBonusString[itemLevel]
 end
 
 ---Filters a list of bonus IDs to only those that impact the calculated item level.
@@ -325,72 +315,6 @@ function private.ApplyContentTuning(dropLevel, contentTuningId, contentTuningKey
 		error("Unknown content tuning op: "..name)
 	end
 	return dropLevel
-end
-
-function private.GetBonusStringForLevel(itemLevel)
-	-- Direct level match (set or fixed scale)
-	local directBonusId = private.data.levelToBonusId[itemLevel]
-	if directBonusId then
-		return "1:" .. directBonusId
-	end
-
-	-- Add + set combo
-	local addBonuses = private.data.addBonuses
-	for i = 1, #addBonuses, 2 do
-		local baseBonusId = private.data.setLevelBonuses[itemLevel - addBonuses[i + 1]]
-		if baseBonusId then
-			local bonusId = addBonuses[i]
-			if bonusId < baseBonusId then
-				return "2:" .. bonusId .. ":" .. baseBonusId
-			else
-				return "2:" .. baseBonusId .. ":" .. bonusId
-			end
-		end
-	end
-
-	-- Curve search (first match)
-	local curveBonuses = private.data.curveBonuses
-	local curves = private.data.curves
-	for i = 1, #curveBonuses, 3 do
-		local curveLevelModifier = private.FindCurveLevel(curves[curveBonuses[i + 1] + 1], itemLevel - curveBonuses[i + 2])
-		if curveLevelModifier then
-			return "1:" .. curveBonuses[i] .. ":1:9:" .. curveLevelModifier
-		end
-	end
-
-	return nil
-end
-
----@param curve BonusIdCurve
-function private.FindCurveLevel(curve, targetValue)
-	local result = nil
-	local lowerLevelBound, upperLevelBound = nil, nil
-	for curveLevel, curveItemLevel in pairs(curve) do
-		if curveItemLevel == targetValue then
-			if not result or curveLevel > result then
-				result = curveLevel
-			end
-		elseif curveItemLevel < targetValue then
-			lowerLevelBound = max(lowerLevelBound or -math.huge, curveLevel)
-		else
-			upperLevelBound = min(upperLevelBound or math.huge, curveLevel)
-		end
-	end
-	if result then
-		return result
-	end
-	if not lowerLevelBound or not upperLevelBound then
-		return nil
-	end
-	local lowerItemLevel = curve[lowerLevelBound]
-	local upperItemLevel = curve[upperLevelBound]
-	for level = lowerLevelBound, upperLevelBound do
-		local curveItemLevel = floor(lowerItemLevel + ((level - lowerLevelBound) / (upperLevelBound - lowerLevelBound)) * (upperItemLevel - lowerItemLevel) + 0.5)
-		if curveItemLevel == targetValue then
-			return level
-		end
-	end
-	return nil
 end
 
 function private.GetSquishValue(value)
