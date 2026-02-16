@@ -53,6 +53,24 @@ local itemLevel = LibBonusId.CalculateItemLevelFromItemInfo(itemId, bonusIds, mo
 
 **Returns:** The calculated item level (number).
 
+### `LibBonusId.GetBonusStringForLevel(itemLevel)`
+
+Returns a bonus string (partial item link format) that produces the given item level. This is the reverse of the calculation APIs — given a target item level, it finds a set of bonus IDs (and optional drop level modifier) that will produce that level when applied to any item.
+
+```lua
+local bonusString = LibBonusId.GetBonusStringForLevel(itemLevel)
+```
+
+**Parameters:**
+- `itemLevel` (number) — The target item level
+
+**Returns:** A bonus string (string?) in one of these formats, or `nil` if no match is found:
+- `"1:<bonusId>"` — A single bonus ID that sets or scales to the target level
+- `"2:<bonusId1>:<bonusId2>"` — Two bonus IDs (an add + set combo) sorted numerically
+- `"1:<bonusId>:1:9:<dropLevel>"` — A curve-based bonus ID with a drop level modifier
+
+The returned string uses the same encoding as the bonus/modifier portion of an item link. The first number is the bonus ID count, followed by the bonus IDs, then an optional modifier count and modifier key-value pairs (type 9 = drop level).
+
 ## Data File
 
 The bundled `Data.lua` file is generated from Blizzard's DB2 tables for a specific game build. The data is serialized and compressed in a way that leverages WoW's built-in `C_EncodingUtil` APIs to minimize the impact on loading times (adds ~20ms in testing including both reading the file and decoding the data).

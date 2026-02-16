@@ -31206,11 +31206,33 @@ function private.ItemLinksTestThread()
 		local itemId = tonumber(strmatch(link, "item:(%d+):"))
 		local calculated = LibBonusId.CalculateItemLevelFromItemLink(link)
 		local itemLevel = private.GetItemLevelFromTooltip(link)
-		if itemLevel and itemLevel ~= calculated then
-			if numErrors < 100 then
-				print(format("[ERROR] Calculated an item level of %d, expected %d for %s", calculated, itemLevel, link))
+		if itemLevel then
+			if itemLevel == calculated then
+				local bonusString = LibBonusId.GetBonusStringForLevel(calculated)
+				if bonusString then
+					local parts = strsplittable(":", bonusString)
+					local numBonusIds = tonumber(parts[1])
+					local bonusIds = {}
+					for i = 1, numBonusIds do
+						tinsert(bonusIds, tonumber(parts[i + 1]))
+					end
+					local modifierDropLevel = nil
+					if numBonusIds ~= #parts + 1 then
+						modifierDropLevel = strmatch(":9:(%d+)$", bonusString)
+					end
+					local calculated2 = LibBonusId.CalculateItemLevelFromItemInfo(itemId, bonusIds, modifierDropLevel)
+					if calculated2 ~= calculated then
+						print(format("[ERROR] Round-trip calculated an item level of %d, expected %d for %s (%s)", calculated2, calculated, link, bonusString))
+					end
+				else
+					print(format("[ERROR] Could not get bonus string for level %d", calculated))
+				end
+			else
+				if numErrors < 100 then
+					print(format("[ERROR] Calculated an item level of %d, expected %d for %s", calculated, itemLevel, link))
+				end
+				numErrors = numErrors + 1
 			end
-			numErrors = numErrors + 1
 		end
 		if index % 1000 == 0 then
 			print(format("Checked %d/%d links", index, #private.linkData))
