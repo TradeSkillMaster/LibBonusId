@@ -87,7 +87,7 @@ The data contains:
 
 ## Generating Data.lua
 
-The code to generate `Data.lua` from Blizzard's DB2 tables is not yet included in this repository. This is actively being worked on and planned to be included in the near future.
+The tool to generate `Data.lua` from Blizzard's DB2 tables is available at [BonusIdTool](https://github.com/TradeSkillMaster/BonusIdTool).
 
 ## How Item Level Calculation Works
 
