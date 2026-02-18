@@ -67,10 +67,12 @@ local DEFAULT_DROP_LEVEL = 80
 function Lib.ShouldLoadData(version, build)
 	if version ~= DATA_VERSION then
 		return false
+	elseif not private.data then
+		return true
 	end
 	local patch, buildNum = GetBuildInfo()
 	local currentBuild = patch.."."..buildNum
-	if private.data and private.data.build == currentBuild then
+	if private.data.build == currentBuild then
 		return false
 	end
 	return build == currentBuild
