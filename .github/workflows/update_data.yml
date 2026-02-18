@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: Checkout LibBonusId
         uses: actions/checkout@v4
+        with:
+          path: LibBonusId
 
       - name: Clone BonusIdTool
         uses: actions/checkout@v4
@@ -32,6 +34,7 @@ jobs:
 
       - name: Check for changes
         id: diff
+        working-directory: LibBonusId
         run: |
           if git diff --quiet Data.lua; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
@@ -42,10 +45,12 @@ jobs:
       - name: Read build from Data.lua
         if: steps.diff.outputs.changed == 'true'
         id: build
+        working-directory: LibBonusId
         run: echo "build=$(grep -oP '(?<=BUILD = ")[^"]+' Data.lua)" >> "$GITHUB_OUTPUT"
 
       - name: Commit and push
         if: steps.diff.outputs.changed == 'true'
+        working-directory: LibBonusId
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
