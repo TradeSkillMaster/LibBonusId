@@ -14,6 +14,7 @@ local private = {
 local DATA_VERSION = 1
 local OP_GROUP = { scale = "level", set = "level", add = "add" }
 local DEFAULT_DROP_LEVEL = 80
+local TREE_BONUS_ID = 3524
 
 ---@alias BonusIdCurve table<number,number>
 
@@ -52,6 +53,8 @@ local DEFAULT_DROP_LEVEL = 80
 ---@field contentTuning table<number, BonusContentTuning>
 ---@field items table<number, number>
 ---@field midnightItems table<number, boolean>
+---@field treeBonusLists number[][]
+---@field itemTreeBonuses table<number, number>
 ---@field levelToBonusString table<number, string>
 
 
@@ -96,7 +99,8 @@ end
 ---@param bonusIds number[] The bonus IDs to filter
 function Lib.FilterItemLevelBonusIds(bonusIds)
 	for i = #bonusIds, 1, -1 do
-		if not private.data.bonuses[bonusIds[i]] then
+		local bonusId = bonusIds[i]
+		if bonusId ~= TREE_BONUS_ID and not private.data.bonuses[bonusId] then
 			tremove(bonusIds, i)
 		end
 	end
@@ -178,7 +182,7 @@ end
 function private.Calculate(itemId, modifierDropLevel, modifierContentTuningId)
 	local itemLevel = private.data.items[itemId] or 0
 	local hasMidnightScaling = private.data.midnightItems[itemId] or false
-	private.ResolveBonusIds(private.bonusIdsTemp)
+	private.ResolveBonusIds(private.bonusIdsTemp, itemId)
 
 	-- Collect indirect first, then direct (direct overrides via dedup)
 	assert(not next(private.bonusesTemp))
@@ -250,7 +254,21 @@ function private.Calculate(itemId, modifierDropLevel, modifierContentTuningId)
 	return itemLevel
 end
 
-function private.ResolveBonusIds(ids)
+function private.ResolveBonusIds(ids, itemId)
+	-- Expand bonus 3524 into the item's tree bonus IDs
+	for i = #ids, 1, -1 do
+		if ids[i] == TREE_BONUS_ID then
+			local listIndex = private.data.itemTreeBonuses[itemId]
+			tremove(ids, i)
+			if listIndex then
+				local treeBonuses = private.data.treeBonusLists[listIndex]
+				for j = #treeBonuses, 1, -1 do
+					tinsert(ids, i, treeBonuses[j])
+				end
+			end
+		end
+	end
+	-- Follow simple redirects
 	for i, id in ipairs(ids) do
 		local bonus = private.data.bonuses[id]
 		if bonus and bonus.redirect then
