@@ -51,7 +51,8 @@ local TREE_BONUS_ID = 3524
 ---@field bonuses table<number, BonusEntry>
 ---@field curves BonusIdCurve[]
 ---@field contentTuning table<number, BonusContentTuning>
----@field items table<number, number>
+---@field itemRangeStarts number[]
+---@field itemRangeLevels number[]
 ---@field midnightItems table<number, boolean>
 ---@field treeBonusLists number[][]
 ---@field itemTreeBonuses table<number, number>
@@ -180,7 +181,7 @@ function private.ParseLink(link, bonusIds)
 end
 
 function private.Calculate(itemId, modifierDropLevel, modifierContentTuningId)
-	local itemLevel = private.data.items[itemId] or 0
+	local itemLevel = private.GetItemLevel(itemId)
 	local hasMidnightScaling = private.data.midnightItems[itemId] or false
 	private.ResolveBonusIds(private.bonusIdsTemp, itemId)
 
@@ -252,6 +253,23 @@ function private.Calculate(itemId, modifierDropLevel, modifierContentTuningId)
 		itemLevel = private.GetSquishValue(itemLevel)
 	end
 	return itemLevel
+end
+
+function private.GetItemLevel(itemId)
+	local starts = private.data.itemRangeStarts
+	local low, high = 1, #starts
+	while low <= high do
+		local mid = floor((low + high) / 2)
+		if starts[mid] <= itemId then
+			low = mid + 1
+		else
+			high = mid - 1
+		end
+	end
+	if high >= 1 then
+		return private.data.itemRangeLevels[high]
+	end
+	return 0
 end
 
 function private.ResolveBonusIds(ids, itemId)
