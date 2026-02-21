@@ -111,7 +111,7 @@ end
 ---@param itemId number The item ID
 ---@param bonusIds number[] The bonus IDs applied to the item
 ---@param modifierDropLevel number? The drop level for the item (modifier 9)
----@param modifierContentTuningId numer? The content tuning ID for the item (modifier 28)
+---@param modifierContentTuningId number? The content tuning ID for the item (modifier 28)
 ---@return number
 function Lib.CalculateItemLevelFromItemInfo(itemId, bonusIds, modifierDropLevel, modifierContentTuningId)
 	assert(not next(private.bonusIdsTemp))
@@ -224,6 +224,7 @@ function private.Calculate(itemId, modifierDropLevel, modifierContentTuningId)
 			itemLevel = itemLevel + bonus.amount
 		elseif op == "set" then
 			itemLevel = bonus.itemLevel
+			assert(itemLevel)
 		elseif op == "scale" then
 			local dropLevel = bonus.defaultLevel or modifierDropLevel or DEFAULT_DROP_LEVEL
 			if bonus.contentTuningKey and (not bonus.contentTuningDefaultOnly or not modifierDropLevel) then
@@ -338,21 +339,20 @@ function private.ApplyContentTuning(dropLevel, contentTuningId, contentTuningKey
 	if not op then
 		return dropLevel
 	end
-	local name, value1, value2, value3 = unpack(op)
+	local name = op[1]
 	if name == "cap" then
-		return min(dropLevel, value1)
+		return min(dropLevel, op[2])
 	elseif name == "clamp" then
-		return min(max(dropLevel, value1), value2)
+		return min(max(dropLevel, op[2]), op[3])
 	elseif name == "const" then
-		return value1
+		return op[2]
 	elseif name == "capAdd" then
-		return min(dropLevel, value1) + value2
+		return min(dropLevel, op[2]) + op[3]
 	elseif name == "capAddFloor" then
-		return max(min(dropLevel, value1) + value2, value3)
+		return max(min(dropLevel, op[2]) + op[3], op[4])
 	else
 		error("Unknown content tuning op: "..name)
 	end
-	return dropLevel
 end
 
 function private.GetSquishValue(value)
