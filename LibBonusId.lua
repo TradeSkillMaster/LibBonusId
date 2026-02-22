@@ -107,6 +107,19 @@ function Lib.FilterItemLevelBonusIds(bonusIds)
 	end
 end
 
+---Removes TREE_BONUS_ID from the list if the item has no tree bonuses.
+---@param bonusIds number[] The bonus IDs to filter
+---@param itemId number The item ID
+function Lib.FilterTreeBonusId(bonusIds, itemId)
+	if not private.data.itemTreeBonuses[itemId] then
+		for i = #bonusIds, 1, -1 do
+			if tonumber(bonusIds[i]) == TREE_BONUS_ID then
+				tremove(bonusIds, i)
+			end
+		end
+	end
+end
+
 ---Calculates the item level for an item from its parsed link components.
 ---@param itemId number The item ID
 ---@param bonusIds number[] The bonus IDs applied to the item
