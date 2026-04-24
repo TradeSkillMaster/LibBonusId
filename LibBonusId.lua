@@ -257,6 +257,7 @@ function private.Calculate(itemId, modifierDropLevel, modifierContentTuningId)
 				local contentTuningId = modifierContentTuningId or bonus.contentTuningId
 				dropLevel = private.ApplyContentTuning(dropLevel, contentTuningId, bonus.contentTuningKey)
 			end
+			assert(bonus.curveId)
 			itemLevel = private.GetCurveValue(bonus.curveId, dropLevel) + (bonus.offset or 0)
 		else
 			error("Unknown bonus op: "..tostring(op))
