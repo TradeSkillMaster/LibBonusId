@@ -153,6 +153,7 @@ end
 function Lib.CalculateItemLevelFromItemLink(link)
 	assert(not next(private.bonusIdsTemp))
 	local itemId, modifierDropLevel, modifierContentTuningId = private.ParseLink(link, private.bonusIdsTemp)
+	assert(itemId)
 	return private.Calculate(itemId, modifierDropLevel, modifierContentTuningId)
 end
 
