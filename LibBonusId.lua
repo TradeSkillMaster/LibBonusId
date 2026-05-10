@@ -256,6 +256,7 @@ function private.Calculate(itemId, modifierDropLevel, modifierContentTuningId)
 			local dropLevel = bonus.defaultLevel or modifierDropLevel or DEFAULT_DROP_LEVEL
 			if not bonus.defaultLevel and bonus.contentTuningKey and (not bonus.contentTuningDefaultOnly or not modifierDropLevel) then
 				local contentTuningId = modifierContentTuningId or bonus.contentTuningId
+				assert(contentTuningId)
 				dropLevel = private.ApplyContentTuning(dropLevel, contentTuningId, bonus.contentTuningKey)
 			end
 			assert(bonus.curveId)
