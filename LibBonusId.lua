@@ -153,6 +153,7 @@ end
 function Lib.CalculateItemLevelFromItemLink(link)
 	assert(not next(private.bonusIdsTemp))
 	local itemId, modifierDropLevel, modifierContentTuningId = private.ParseLink(link, private.bonusIdsTemp)
+	assert(itemId)
 	return private.Calculate(itemId, modifierDropLevel, modifierContentTuningId)
 end
 
@@ -255,8 +256,10 @@ function private.Calculate(itemId, modifierDropLevel, modifierContentTuningId)
 			local dropLevel = bonus.defaultLevel or modifierDropLevel or DEFAULT_DROP_LEVEL
 			if not bonus.defaultLevel and bonus.contentTuningKey and (not bonus.contentTuningDefaultOnly or not modifierDropLevel) then
 				local contentTuningId = modifierContentTuningId or bonus.contentTuningId
+				assert(contentTuningId)
 				dropLevel = private.ApplyContentTuning(dropLevel, contentTuningId, bonus.contentTuningKey)
 			end
+			assert(bonus.curveId)
 			itemLevel = private.GetCurveValue(bonus.curveId, dropLevel) + (bonus.offset or 0)
 		else
 			error("Unknown bonus op: "..tostring(op))

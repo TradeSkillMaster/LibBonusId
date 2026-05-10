@@ -1,0 +1,11 @@
+{
+    "diagnostics": {
+        "enable": [
+            "need-check-nil"
+        ]
+    },
+    "ignore": [
+        "Test.lua"
+    ],
+    "framexml": false
+}
