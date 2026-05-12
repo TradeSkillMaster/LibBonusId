@@ -6,10 +6,8 @@ local Lib = LibStub:NewLibrary("LibBonusId", 1) ---@class LibBonusId
 if not Lib then return end
 local private = {
 	data = nil, ---@type BonusIdData
-	squishMax = nil,
 	bonusIdsTemp = {}, ---@type number[]
 	bonusesTemp = {}, ---@type BonusEntry[]
-	filterTemp = {}, ---@type number[]
 }
 local DATA_VERSION = 2
 local OP_GROUP = { scale = "level", set = "level", add = "add" }
