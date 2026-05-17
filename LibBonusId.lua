@@ -7,7 +7,7 @@ if not Lib then return end
 local private = {
 	data = nil, ---@type BonusIdData
 	bonusIdsTemp = {}, ---@type number[]
-	bonusesTemp = {}, ---@type BonusEntry[]
+	bonusesTemp = {}, ---@type BonusEntry[]|table<string,number>
 }
 local DATA_VERSION = 2
 local OP_GROUP = { scale = "level", set = "level", add = "add" }
