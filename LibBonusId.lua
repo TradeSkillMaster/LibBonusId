@@ -170,6 +170,7 @@ function private.ParseLink(link, bonusIds)
 	local itemId = tonumber(itemIdStr)
 	local dropLevel, contentTuningId = nil, nil
 	local numBonusIds, numModifiers, modifierOffset, currentModifierType = nil, nil, nil, nil
+	---@correlated numModifiers, modifierOffset
 	for part in gmatch(bonusModiferStr, "(%d*):") do
 		part = tonumber(part)
 		if not numBonusIds then
