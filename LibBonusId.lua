@@ -241,12 +241,14 @@ function private.Calculate(itemId, modifierDropLevel, modifierContentTuningId)
 		local midnightOp = bonus.midnight
 		local op = bonus.op
 		if op == "legacyAdd" then
+			assert(bonus.amount)
 			itemLevel = itemLevel + bonus.amount
 		elseif op == "add" then
 			if midnightOp == "force" and not hasMidnightScaling then
 				hasMidnightScaling = true
 				itemLevel = private.GetSquishValue(itemLevel)
 			end
+			assert(bonus.amount)
 			itemLevel = itemLevel + bonus.amount
 		elseif op == "set" then
 			itemLevel = bonus.itemLevel
