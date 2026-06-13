@@ -3,7 +3,7 @@
 --- LibBonusId is provided under the MIT license. See LICENSE.txt for more information.
 
 local Lib = LibStub:NewLibrary("LibBonusId", 1) ---@class LibBonusId
-if not Lib then return end
+if not Lib then return end ---@diagnostic disable-line: redundant-condition
 local private = {
 	data = nil, ---@type BonusIdData
 	bonusIdsTemp = {}, ---@type number[]
