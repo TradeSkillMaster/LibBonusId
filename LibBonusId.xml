@@ -3,5 +3,6 @@
     <Script file="LibStub/LibStub.lua" />
     <Script file="LibBonusId.lua" />
     <Script file="Data.lua" />
+    <Script file="DataForever.lua" />
     <!-- <Script file="Test.lua" /> -->
 </Ui>
