@@ -2,14 +2,15 @@
 --- This library provides API for accurately calculating item levels with bonus IDs taken into account.
 --- LibBonusId is provided under the MIT license. See LICENSE.txt for more information.
 
-local Lib = LibStub:NewLibrary("LibBonusId", 1) ---@class LibBonusId
+local Lib = LibStub:NewLibrary("LibBonusId", 2) ---@class LibBonusId
 if not Lib then return end ---@diagnostic disable-line: redundant-condition
 local private = {
 	data = nil, ---@type BonusIdData
 	bonusIdsTemp = {}, ---@type number[]
 	bonusesTemp = {}, ---@type BonusEntry[]|table<string,number>
 }
-local DATA_VERSION = 2
+local DATA_VERSION = 3
+local PRODUCT = WOW_PROJECT_ID == WOW_PROJECT_CAMELOT and "wowf" or "wow"
 local OP_GROUP = { scale = "level", set = "level", add = "add" }
 local DEFAULT_DROP_LEVEL = 80
 local TREE_BONUS_ID = 3524
@@ -43,6 +44,7 @@ local TREE_BONUS_ID = 3524
 
 ---@class BonusIdData
 ---@field version number
+---@field product string
 ---@field build string
 ---@field squishMax number
 ---@field squishCurve BonusIdCurve
@@ -64,11 +66,12 @@ local TREE_BONUS_ID = 3524
 -- ============================================================================
 
 ---@param version number
+---@param product string
 ---@param build string
 ---@return boolean
 ---@private
-function Lib.ShouldLoadData(version, build)
-	if version ~= DATA_VERSION then
+function Lib.ShouldLoadData(version, product, build)
+	if version ~= DATA_VERSION or product ~= PRODUCT then
 		return false
 	elseif not private.data then
 		return true
@@ -84,7 +87,7 @@ end
 ---@param data BonusIdData
 ---@private
 function Lib.LoadData(data)
-	assert(Lib.ShouldLoadData(data.version, data.build))
+	assert(Lib.ShouldLoadData(data.version, data.product, data.build))
 	private.data = data
 end
 
@@ -136,8 +139,11 @@ end
 ---@param bonusIds number[] The bonus IDs applied to the item
 ---@param modifierDropLevel number? The drop level for the item (modifier 9)
 ---@param modifierContentTuningId number? The content tuning ID for the item (modifier 28)
----@return number
+---@return number?
 function Lib.CalculateItemLevelFromItemInfo(itemId, bonusIds, modifierDropLevel, modifierContentTuningId)
+	if not private.HasItemLevelData() then
+		return nil
+	end
 	assert(not next(private.bonusIdsTemp))
 	for _, bonusId in ipairs(bonusIds) do
 		tinsert(private.bonusIdsTemp, bonusId)
@@ -147,8 +153,11 @@ end
 
 ---Calculates the item level for an item from its link.
 ---@param link string The item link
----@return number
+---@return number?
 function Lib.CalculateItemLevelFromItemLink(link)
+	if not private.HasItemLevelData() then
+		return nil
+	end
 	assert(not next(private.bonusIdsTemp))
 	local itemId, modifierDropLevel, modifierContentTuningId = private.ParseLink(link, private.bonusIdsTemp)
 	assert(itemId)
@@ -160,6 +169,10 @@ end
 -- ============================================================================
 -- Private Helper Functions
 -- ============================================================================
+
+function private.HasItemLevelData()
+	return #private.data.itemRangeStarts > 0
+end
 
 function private.ParseLink(link, bonusIds)
 	assert(#bonusIds == 0)

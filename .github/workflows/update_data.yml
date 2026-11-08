@@ -34,21 +34,25 @@ jobs:
         working-directory: BonusIdTool
         run: python bonus_id_tool.py generate
 
+      - name: Generate DataForever.lua
+        working-directory: BonusIdTool
+        run: python bonus_id_tool.py generate --product wowf
+
       - name: Check for changes
         id: diff
         working-directory: LibBonusId
         run: |
-          if git diff --quiet Data.lua; then
+          if git diff --quiet Data.lua DataForever.lua; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Read build from Data.lua
+      - name: Read builds from the data files
         if: steps.diff.outputs.changed == 'true'
         id: build
         working-directory: LibBonusId
-        run: echo "build=$(grep -oP '(?<=BUILD = ")[^"]+' Data.lua)" >> "$GITHUB_OUTPUT"
+        run: echo "build=$(grep -ohP '(?<=BUILD = ")[^"]+' Data.lua DataForever.lua | paste -sd ',' - | sed 's/,/, /g')" >> "$GITHUB_OUTPUT"
 
       - name: Commit and push
         if: steps.diff.outputs.changed == 'true'
@@ -56,13 +60,13 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add Data.lua
-          git commit -m "Update Data.lua for build ${{ steps.build.outputs.build }}"
+          git add Data.lua DataForever.lua
+          git commit -m "Update data for builds ${{ steps.build.outputs.build }}"
           git push
 
       - name: Notify Slack
         if: steps.diff.outputs.changed == 'true'
         run: |
           curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"<@${{ secrets.SLACK_USER_ID }}> LibBonusId Data.lua updated for build ${{ steps.build.outputs.build }}"}' \
+            --data '{"text":"<@${{ secrets.SLACK_USER_ID }}> LibBonusId data updated for builds ${{ steps.build.outputs.build }}"}' \
             "${{ secrets.SLACK_WEBHOOK_URL }}"

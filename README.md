@@ -35,7 +35,7 @@ local itemLevel = LibBonusId.CalculateItemLevelFromItemLink(itemLink)
 **Parameters:**
 - `link` (string) — A full item link
 
-**Returns:** The calculated item level.
+**Returns:** The calculated item level, or `nil` if the loaded data has no item level information (WoW Forever).
 
 ### `LibBonusId.CalculateItemLevelFromItemInfo(itemId, bonusIds, modifierDropLevel, modifierContentTuningId)`
 
@@ -51,7 +51,7 @@ local itemLevel = LibBonusId.CalculateItemLevelFromItemInfo(itemId, bonusIds, mo
 - `modifierDropLevel` (number?) — The player's level when the item dropped (modifier type 9 in the item link). Omit or pass `nil` if not present.
 - `modifierContentTuningId` (number?) — The content tuning ID for the item (modifier type 28 in the item link). Omit or pass `nil` if not present.
 
-**Returns:** The calculated item level (number).
+**Returns:** The calculated item level (number?), or `nil` if the loaded data has no item level information (WoW Forever).
 
 ### `LibBonusId.GetBonusStringForLevel(itemLevel)`
 
@@ -76,6 +76,8 @@ The returned string uses the same encoding as the bonus/modifier portion of an i
 The bundled `Data.lua` file is generated from Blizzard's DB2 tables for a specific game build. The data is serialized and compressed in a way that leverages WoW's built-in `C_EncodingUtil` APIs to minimize the impact on loading times (adds ~20ms in testing including both reading the file and decoding the data).
 
 Multiple addons using this library with their own copy of the data file will be handled gracefully. The first one to load will initialize the data, and any subsequent instance of the library will overwrite the data if and only if it has data which better matches the current build.
+
+Each data file is generated for a specific product and only loads on that product's client: `Data.lua` for retail (`wow`) and `DataForever.lua` for WoW Forever (`wowf`). WoW Forever has no item level scaling tables, so `DataForever.lua` only contains the bonus IDs which have an effect and the bonus tree data. On WoW Forever, the item level calculation APIs return `nil` and `GetBonusStringForLevel()` always returns `nil`.
 
 The data contains:
 - **Bonus entries** — Pre-processed operations for each bonus ID (what type of level modification to apply)
